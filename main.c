@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sway-client-helpers/log.h>
 #include <sway-client-helpers/loop.h>
+#include "menu.h"
 #include "trappist.h"
 #include "wlr-input-inhibitor-unstable-v1-client-protocol.h"
 
@@ -74,6 +75,9 @@ main(int argc, char *argv[])
 
 	surface_layer_surface_create(state.surface);
 
+	const char *filename = argc > 1 ? argv[1] : NULL;
+	menu_init(&state, filename);
+
 	state.eventloop = loop_create();
 	loop_add_fd(state.eventloop, wl_display_get_fd(state.display), POLLIN,
 		display_in, NULL);
@@ -87,6 +91,7 @@ main(int argc, char *argv[])
 		loop_poll(state.eventloop);
 	}
 
+	menu_finish(&state);
 	surface_destroy(state.surface);
 	if (state.seat->cursor_theme) {
 		wl_cursor_theme_destroy(state.seat->cursor_theme);

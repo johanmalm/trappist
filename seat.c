@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 #include "trappist.h"
+#include "menu.h"
 
 /*
  * Rigged up using references:
@@ -241,23 +242,28 @@ handle_wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
 	struct seat *seat = data;
 	struct pointer_event *event = &seat->pointer_event;
 
-	/*
-	 * TODO: Send these values along somewhere
-	 * int pointer_x = wl_fixed_to_int(event->surface_x);
-	 * int pointer_y = wl_fixed_to_int(event->surface_y);
-	 *
-	 * menu_process_cursor_motion(seat->state, pointer_x, pointer_y); ???
-	 */
+	if (event->event_mask & POINTER_EVENT_MOTION) {
+		seat->pointer_x = wl_fixed_to_int(event->surface_x);
+		seat->pointer_y = wl_fixed_to_int(event->surface_y);
+		menu_handle_cursor_motion(seat->state->menu,
+			seat->pointer_x, seat->pointer_y);
+	}
 
 	if (event->event_mask & POINTER_EVENT_BUTTON) {
+		int x = seat->pointer_x;
+		int y = seat->pointer_y;
 		switch (event->state) {
+		case WL_POINTER_BUTTON_STATE_PRESSED:
+			menu_handle_button_pressed(seat->state, x, y);
+			break;
 		case WL_POINTER_BUTTON_STATE_RELEASED:
-			exit(0);
+			menu_handle_button_released(seat->state, x, y);
 			break;
 		default:
 		}
 	}
 	memset(event, 0, sizeof(struct pointer_event));
+	surface_damage(seat->state->surface);
 }
 
 static const struct wl_pointer_listener pointer_listener = {

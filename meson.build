@@ -31,6 +31,7 @@ wayland_protos = dependency('wayland-protocols')
 xkbcommon = dependency('xkbcommon')
 cairo = dependency('cairo')
 pangocairo = dependency('pangocairo')
+xml2 = dependency('libxml-2.0')
 
 ### wlr-protocols
 r = run_command('git', 'clone', 'https://gitlab.freedesktop.org/wlroots/wlr-protocols.git', 'build/wlr-protocols', check: false)
@@ -91,12 +92,14 @@ dependencies = [
   wayland_client,
   wayland_cursor,
   sway_client_helpers,
+  xml2,
 ]
 
 sources = files(
   'globals.c',
   'key.c',
   'main.c',
+  'menu.c',
   'output.c',
   'render.c',
   'search.c',

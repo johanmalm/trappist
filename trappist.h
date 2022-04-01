@@ -21,6 +21,10 @@ struct state {
 	struct wl_shm *shm;
 	struct wl_list outputs;
 	struct surface *surface;
+
+	struct menu *menu;
+	struct menuitem *selection;
+
 	struct loop *eventloop;
 	struct loop_timer *hover_timer;
 	struct zwlr_layer_shell_v1 *layer_shell;
@@ -71,6 +75,8 @@ struct seat {
 	struct wl_surface *cursor_surface;
 	struct wl_cursor_theme *cursor_theme;
 	struct pointer_event pointer_event;
+	int pointer_x;
+	int pointer_y;
 
 	struct wl_keyboard *keyboard;
 	struct {
