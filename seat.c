@@ -66,7 +66,7 @@ keyboard_repeat(void *data)
 	struct state *state = seat->state;
 	seat->repeat_timer = loop_add_timer(state->eventloop,
 		seat->repeat_period_ms, keyboard_repeat, seat);
-	key_handle(state, seat->repeat_sym, seat->repeat_codepoint);
+	menu_handle_key(state, seat->repeat_sym, seat->repeat_codepoint);
 }
 
 static void
@@ -81,7 +81,7 @@ handle_wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 		key + 8 : 0;
 	uint32_t codepoint = xkb_state_key_get_utf32(seat->xkb.state, keycode);
 	if (key_state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		key_handle(state, sym, codepoint);
+		menu_handle_key(state, sym, codepoint);
 	}
 
 	if (seat->repeat_timer) {

@@ -2,6 +2,7 @@
 #ifndef _TRAPPIST_MENU_H
 #define _TRAPPIST_MENU_H
 #include <cairo.h>
+#include <xkbcommon/xkbcommon.h>
 #include <wayland-server.h>
 
 #define MENU_X (1)
@@ -58,5 +59,7 @@ void menu_move(struct menu *menu, int x, int y);
 void menu_handle_cursor_motion(struct menu *menu, int x, int y);
 void menu_handle_button_pressed(struct state *state, int x, int y);
 void menu_handle_button_released(struct state *state, int x, int y);
+void menu_handle_key(struct state *state, xkb_keysym_t keysym,
+	uint32_t codepoint);
 
 #endif /* _TRAPPIST_MENU_H */

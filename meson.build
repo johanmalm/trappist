@@ -97,7 +97,6 @@ dependencies = [
 
 sources = files(
   'globals.c',
-  'key.c',
   'main.c',
   'menu.c',
   'output.c',

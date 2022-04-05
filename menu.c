@@ -343,6 +343,21 @@ menu_configure(struct menu *menu, int x, int y)
 	menu->box.height = offset + MENU_PADDING_Y * 2;
 }
 
+static struct menuitem *
+first_selectable_menuitem(struct state *state)
+{
+	struct menu *menu = state->menu;
+	for (int i = 0; i < nr_menus; ++i) {
+		menu = menus + i;
+		if (!menu->visible) {
+			continue;
+		}
+		struct menuitem *item;
+		return wl_container_of(menu->menuitems.prev, item, link);
+	}
+	return NULL;
+}
+
 void
 menu_init(struct state *state, const char *filename)
 {
@@ -367,6 +382,7 @@ menu_init(struct state *state, const char *filename)
 	}
 
 	state->menu->visible = true;
+	state->selection = first_selectable_menuitem(state);
 	menu_move(state->menu, MENU_X, MENU_Y);
 }
 
@@ -487,4 +503,73 @@ void
 menu_handle_button_released(struct state *state, int x, int y)
 {
 	fprintf(stderr, "(%d,%d) exec %s\n", x, y, state->selection->command);
+}
+
+static struct menu *
+menu_from_item(struct state *state, struct menuitem *menuitem)
+{
+	struct menu *menu = state->menu;
+	for (int i = 0; i < nr_menus; ++i) {
+		menu = menus + i;
+		struct menuitem *item;
+		wl_list_for_each (item, &menu->menuitems, link) {
+			if (item == menuitem) {
+				return menu;
+			}
+		}
+	}
+	return NULL;
+}
+
+enum trappist_direction {
+	DIRECTION_UP,
+	DIRECTION_DOWN,
+};
+
+static void
+move_selection(struct state *state, enum trappist_direction direction)
+{
+	struct menu *menu = menu_from_item(state, state->selection);
+	assert(menu);
+	do {
+		struct wl_list *p = direction == DIRECTION_UP
+			? state->selection->link.next
+			: state->selection->link.prev;
+		state->selection = wl_container_of(p, state->selection, link);
+	} while (&state->selection->link == &menu->menuitems);
+}
+
+void
+menu_handle_key(struct state *state, xkb_keysym_t keysym, uint32_t codepoint)
+{
+	if (!state->selection) {
+		state->selection = first_selectable_menuitem(state);
+	}
+
+	switch (keysym) {
+	case XKB_KEY_Up:
+		move_selection(state, DIRECTION_UP);
+		timer_hover_start(state);
+		break;
+	case XKB_KEY_Down:
+		move_selection(state, DIRECTION_DOWN);
+		timer_hover_start(state);
+		break;
+	case XKB_KEY_KP_Enter:
+	case XKB_KEY_Return:
+		break;
+	case XKB_KEY_BackSpace:
+		search_remove_last_uft8_character();
+		break;
+	case XKB_KEY_Escape:
+		state->run_display = false;
+		break;
+	default:
+		if (!codepoint) {
+			break;
+		}
+		search_add_utf8_character(codepoint);
+		break;
+	}
+	surface_damage(state->surface);
 }
