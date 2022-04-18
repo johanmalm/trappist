@@ -453,6 +453,16 @@ menu_from_item(struct state *state, struct menuitem *menuitem)
 	return NULL;
 }
 
+static void
+open_submenu(struct state *state, struct menuitem *item)
+{
+	assert(item && item->submenu);
+	struct menu *menu = menu_from_item(state, item);
+	assert(menu);
+	close_all_submenus(menu);
+	item->submenu->visible = true;
+}
+
 #define TRAPPIST_HOVER_DELAY_MSEC (250)
 
 static void
@@ -461,11 +471,8 @@ timer_hover_clear(void *data)
 	struct state *state = data;
 	state->hover_timer = NULL;
 
-	struct menu *menu = menu_from_item(state, state->selection);
-	assert(menu);
 	if (state->selection->submenu) {
-		close_all_submenus(menu);
-		state->selection->submenu->visible = true;
+		open_submenu(state, state->selection);
 	}
 	surface_damage(state->surface);
 }
@@ -532,7 +539,7 @@ menu_handle_cursor_motion(struct menu *menu, int x, int y)
 void
 menu_handle_button_pressed(struct state *state, int x, int y)
 {
-	struct menu *menu = state->menu;
+	struct menu *menu;
 	for (int i = 0; i < nr_menus; ++i) {
 		menu = menus + i;
 		if (!menu->visible) {
@@ -562,15 +569,39 @@ move_selection(struct state *state, enum trappist_direction direction)
 	struct menu *menu = menu_from_item(state, state->selection);
 	assert(menu);
 	do {
-		struct wl_list *p = direction == DIRECTION_UP
+		struct menuitem *item = state->selection;
+		struct wl_list *list = direction == DIRECTION_UP
 			? state->selection->link.next
 			: state->selection->link.prev;
-		state->selection = wl_container_of(p, state->selection, link);
+		state->selection = wl_container_of(list, item, link);
 	} while (&state->selection->link == &menu->menuitems);
 	if (state->selection->submenu) {
-		close_all_submenus(menu);
-		state->selection->submenu->visible = true;
+		open_submenu(state, state->selection);
 	}
+}
+
+struct menuitem *
+parent_of(struct state *state, struct menuitem *menuitem)
+{
+	struct menu *child = menu_from_item(state, menuitem);
+	for (int i = 0; i < nr_menus; ++i) {
+		struct menu *menu = menus + i;
+		struct menuitem *item;
+		wl_list_for_each (item, &menu->menuitems, link) {
+			if (item->submenu == child) {
+				return item;
+			}
+		}
+	}
+	return menuitem;
+}
+
+struct menuitem *
+child_of(struct state *state, struct menuitem *menuitem)
+{
+	struct menuitem *item;
+	struct wl_list *list = menuitem->submenu->menuitems.prev;
+	return wl_container_of(list, item, link);
 }
 
 void
@@ -586,6 +617,14 @@ menu_handle_key(struct state *state, xkb_keysym_t keysym, uint32_t codepoint)
 		break;
 	case XKB_KEY_Down:
 		move_selection(state, DIRECTION_DOWN);
+		break;
+	case XKB_KEY_Right:
+		if (state->selection->submenu) {
+			state->selection = child_of(state, state->selection);
+		}
+		break;
+	case XKB_KEY_Left:
+		state->selection = parent_of(state, state->selection);
 		break;
 	case XKB_KEY_KP_Enter:
 	case XKB_KEY_Return:
