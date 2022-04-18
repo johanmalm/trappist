@@ -104,7 +104,6 @@ sources = files(
   'search.c',
   'seat.c',
   'surface.c',
-  'timer.c',
 )
 
 executable(

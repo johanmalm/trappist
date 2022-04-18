@@ -105,7 +105,6 @@ struct surface {
 };
 
 void key_handle(struct state *state, xkb_keysym_t keysym, uint32_t codepoint);
-void timer_hover_start(struct state *state);
 void render_frame(struct surface *surface);
 void surface_layer_surface_create(struct surface *surface);
 bool surface_is_configured(struct surface *surface);

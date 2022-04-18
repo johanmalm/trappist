@@ -12,6 +12,7 @@
 #include <strings.h>
 #include "menu.h"
 #include "sway-client-helpers/log.h"
+#include <sway-client-helpers/loop.h>
 #include "sway-client-helpers/util.h"
 #include "trappist.h"
 
@@ -436,6 +437,49 @@ menu_move(struct menu *menu, int x, int y)
 	surface_damage(menu->state->surface);
 }
 
+static struct menu *
+menu_from_item(struct state *state, struct menuitem *menuitem)
+{
+	struct menu *menu = state->menu;
+	for (int i = 0; i < nr_menus; ++i) {
+		menu = menus + i;
+		struct menuitem *item;
+		wl_list_for_each (item, &menu->menuitems, link) {
+			if (item == menuitem) {
+				return menu;
+			}
+		}
+	}
+	return NULL;
+}
+
+#define TRAPPIST_HOVER_DELAY_MSEC (250)
+
+static void
+timer_hover_clear(void *data)
+{
+	struct state *state = data;
+	state->hover_timer = NULL;
+
+	struct menu *menu = menu_from_item(state, state->selection);
+	assert(menu);
+	if (state->selection->submenu) {
+		close_all_submenus(menu);
+		state->selection->submenu->visible = true;
+	}
+	surface_damage(state->surface);
+}
+
+static void
+timer_hover_start(struct state *state)
+{
+	if (state->hover_timer) {
+		loop_remove_timer(state->eventloop, state->hover_timer);
+	}
+	state->hover_timer = loop_add_timer(state->eventloop,
+		TRAPPIST_HOVER_DELAY_MSEC, timer_hover_clear, state);
+}
+
 static bool
 box_empty(const struct box *box)
 {
@@ -472,14 +516,16 @@ menu_handle_cursor_motion(struct menu *menu, int x, int y)
 			menu->state->selection = item;
 			break;
 		} else if (!item->submenu->visible) {
-			/* cursor is over a new (not visible yet) submenu */
-			close_all_submenus(menu);
-			item->submenu->visible = true;
+			/*
+			 * Cursor is over a new (not visible yet) submenu,
+			 * so let's just set the selection and wait for the
+			 * hover-timer to timeout
+			 */
 			menu->state->selection = item;
-			menu_handle_cursor_motion(item->submenu, x, y);
 			break;
 		}
 	}
+	timer_hover_start(menu->state);
 	surface_damage(menu->state->surface);
 }
 
@@ -505,22 +551,6 @@ menu_handle_button_released(struct state *state, int x, int y)
 	fprintf(stderr, "(%d,%d) exec %s\n", x, y, state->selection->command);
 }
 
-static struct menu *
-menu_from_item(struct state *state, struct menuitem *menuitem)
-{
-	struct menu *menu = state->menu;
-	for (int i = 0; i < nr_menus; ++i) {
-		menu = menus + i;
-		struct menuitem *item;
-		wl_list_for_each (item, &menu->menuitems, link) {
-			if (item == menuitem) {
-				return menu;
-			}
-		}
-	}
-	return NULL;
-}
-
 enum trappist_direction {
 	DIRECTION_UP,
 	DIRECTION_DOWN,
@@ -537,6 +567,10 @@ move_selection(struct state *state, enum trappist_direction direction)
 			: state->selection->link.prev;
 		state->selection = wl_container_of(p, state->selection, link);
 	} while (&state->selection->link == &menu->menuitems);
+	if (state->selection->submenu) {
+		close_all_submenus(menu);
+		state->selection->submenu->visible = true;
+	}
 }
 
 void
@@ -549,11 +583,9 @@ menu_handle_key(struct state *state, xkb_keysym_t keysym, uint32_t codepoint)
 	switch (keysym) {
 	case XKB_KEY_Up:
 		move_selection(state, DIRECTION_UP);
-		timer_hover_start(state);
 		break;
 	case XKB_KEY_Down:
 		move_selection(state, DIRECTION_DOWN);
-		timer_hover_start(state);
 		break;
 	case XKB_KEY_KP_Enter:
 	case XKB_KEY_Return:
