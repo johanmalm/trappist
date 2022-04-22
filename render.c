@@ -32,14 +32,13 @@ draw_pixmap(cairo_t *cairo, cairo_surface_t *pixmap, struct box *box)
 static void
 draw_menu(cairo_t *cairo, struct menu *menu)
 {
-	struct menuitem *menuitem;
+	/* background */
 	draw_rect(cairo, &menu->box, COLOR_MENU_BG, true);
 
-	/* Draw border to indicating that we're awaiting hover time-out */
-	if (menu->state->hover_timer) {
-		draw_rect(cairo, &menu->box, COLOR_ITEM_FG_INACTIVE, false);
-	}
+	/* border */
+	draw_rect(cairo, &menu->box, COLOR_MENU_BORDER, false);
 
+	struct menuitem *menuitem;
 	wl_list_for_each (menuitem, &menu->menuitems, link) {
 		cairo_surface_t *pixmap;
 		uint32_t color_item_bg;

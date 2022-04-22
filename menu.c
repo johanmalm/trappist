@@ -466,8 +466,6 @@ open_submenu(struct state *state, struct menuitem *item)
 	item->submenu->visible = true;
 }
 
-#define TRAPPIST_HOVER_DELAY_MSEC (250)
-
 static void
 timer_hover_clear(void *data)
 {
@@ -487,7 +485,7 @@ timer_hover_start(struct state *state)
 		loop_remove_timer(state->eventloop, state->hover_timer);
 	}
 	state->hover_timer = loop_add_timer(state->eventloop,
-		TRAPPIST_HOVER_DELAY_MSEC, timer_hover_clear, state);
+		TRAPPIST_SUBMENU_SHOW_DELAY, timer_hover_clear, state);
 }
 
 static bool
