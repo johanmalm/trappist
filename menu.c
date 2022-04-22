@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <cairo.h>
 #include <ctype.h>
+#include <glib.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <pango/pangocairo.h>
@@ -10,10 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include "menu.h"
-#include "sway-client-helpers/log.h"
+#include <sway-client-helpers/log.h>
 #include <sway-client-helpers/loop.h>
-#include "sway-client-helpers/util.h"
+#include <sway-client-helpers/util.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include "menu.h"
 #include "trappist.h"
 
 /* state-machine variables for processing <item></item> */
@@ -552,10 +555,59 @@ menu_handle_button_pressed(struct state *state, int x, int y)
 	state->run_display = false;
 }
 
+static void
+spawn_async_no_shell(char const *command)
+{
+	GError *err = NULL;
+	gchar **argv = NULL;
+
+	if (!command) {
+		return;
+	}
+	g_shell_parse_argv((gchar *)command, NULL, &argv, &err);
+	if (err) {
+		g_message("%s", err->message);
+		g_error_free(err);
+		return;
+	}
+
+	/*
+	 * Avoid zombie processes by using a double-fork, whereby the
+	 * grandchild becomes orphaned & the responsibility of the OS.
+	 */
+	pid_t child = 0, grandchild = 0;
+
+	child = fork();
+	switch (child) {
+	case -1:
+		LOG(LOG_ERROR, "unable to fork()");
+		goto out;
+	case 0:
+		setsid();
+		sigset_t set;
+		sigemptyset(&set);
+		sigprocmask(SIG_SETMASK, &set, NULL);
+		grandchild = fork();
+		if (grandchild == 0) {
+			execvp(argv[0], argv);
+			_exit(0);
+		} else if (grandchild < 0) {
+			LOG(LOG_ERROR, "unable to fork()");
+		}
+		_exit(0);
+	default:
+		break;
+	}
+	waitpid(child, NULL, 0);
+out:
+	g_strfreev(argv);
+}
+
 void
 menu_handle_button_released(struct state *state, int x, int y)
 {
-	fprintf(stderr, "(%d,%d) exec %s\n", x, y, state->selection->command);
+	spawn_async_no_shell(state->selection->command);
+	state->run_display = false;
 }
 
 enum trappist_direction {
@@ -628,6 +680,8 @@ menu_handle_key(struct state *state, xkb_keysym_t keysym, uint32_t codepoint)
 		break;
 	case XKB_KEY_KP_Enter:
 	case XKB_KEY_Return:
+		spawn_async_no_shell(state->selection->command);
+		state->run_display = false;
 		break;
 	case XKB_KEY_BackSpace:
 		search_remove_last_uft8_character();
