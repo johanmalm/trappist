@@ -6,13 +6,13 @@
 #include <wayland-server.h>
 
 #define MENU_X (1)
-#define MENU_Y (25)
+#define MENU_Y (30)
 #define MENU_ITEM_WIDTH (110)
 #define MENU_ITEM_HEIGHT (30)
 #define MENU_ITEM_PADDING_X (4)
 #define MENU_PADDING_X (1)
 #define MENU_PADDING_Y (1)
-#define MENU_FONT_NAME ("monospace")
+#define MENU_FONT_NAME ("Sans")
 #define MENU_FONT_SIZE (9)
 #define COLOR_MENU_BG (0x000000FF)
 #define COLOR_MENU_BORDER (0x222222FF)
