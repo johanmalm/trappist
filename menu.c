@@ -108,9 +108,9 @@ font_surface_create(cairo_surface_t **pixmap, const char *text, uint32_t color)
 	pango_layout_get_pixel_size(layout, NULL, &height);
 	offset_y = (MENU_ITEM_HEIGHT - height) / 2;
 	cairo_move_to(cairo, MENU_ITEM_PADDING_X, offset_y);
-
 	pango_cairo_update_layout(cairo, layout);
 	pango_cairo_show_layout(cairo, layout);
+
 	g_object_unref(layout);
 	cairo_destroy(cairo);
 }
