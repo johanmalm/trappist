@@ -20,6 +20,7 @@
 #define COLOR_ITEM_ACTIVE_FG (0xDDDDDDFF)
 #define COLOR_ITEM_INACTIVE_BG (0x00000000)
 #define COLOR_ITEM_INACTIVE_FG (0xDDDDDDFF)
+#define COLOR_SEPARATOR_FG (0x444444FF)
 #define TRAPPIST_SUBMENU_SHOW_DELAY (100)
 
 struct state;
@@ -36,6 +37,7 @@ struct menuitem {
 	char *command;
 	struct menu *submenu;
 	struct box box;
+	bool selectable;
 	struct {
 		cairo_surface_t *active;
 		cairo_surface_t *inactive;

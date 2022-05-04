@@ -115,6 +115,24 @@ font_surface_create(cairo_surface_t **pixmap, const char *text, uint32_t color)
 	cairo_destroy(cairo);
 }
 
+void
+separator_pixmap_create(cairo_surface_t **pixmap, uint32_t color)
+{
+	if (*pixmap) {
+		cairo_surface_destroy(*pixmap);
+		*pixmap = NULL;
+	}
+	*pixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+			MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT);
+	cairo_t *cairo = cairo_create(*pixmap);
+	set_source_u32(cairo, color);
+	cairo_set_line_width(cairo, 1.0);
+	cairo_move_to(cairo, 3.0, 2.5);
+	cairo_line_to(cairo, MENU_ITEM_WIDTH - 3.0, 2.5);
+	cairo_stroke(cairo);
+	cairo_destroy(cairo);
+}
+
 static struct menu *
 menu_create(const char *id, const char *label)
 {
@@ -154,10 +172,30 @@ item_create(struct menu *menu, const char *text)
 	}
 	menuitem->box.width = MENU_ITEM_WIDTH;
 	menuitem->box.height = MENU_ITEM_HEIGHT;
+	menuitem->selectable = true;
 	font_surface_create(&menuitem->pixmap.active, text,
 		COLOR_ITEM_ACTIVE_FG);
 	font_surface_create(&menuitem->pixmap.inactive, text,
 		COLOR_ITEM_INACTIVE_FG);
+	wl_list_insert(&menu->menuitems, &menuitem->link);
+	return menuitem;
+}
+
+static struct menuitem *
+separator_create(struct menu *menu, const char *label)
+{
+	struct menuitem *menuitem = calloc(1, sizeof(struct menuitem));
+	if (!menuitem) {
+		return NULL;
+	}
+	menuitem->box.width = MENU_ITEM_WIDTH;
+	menuitem->box.height = 5;
+	menuitem->selectable = false;
+	separator_pixmap_create(&menuitem->pixmap.inactive, COLOR_SEPARATOR_FG);
+
+	/* TODO: temporary only - remove */
+	separator_pixmap_create(&menuitem->pixmap.active, COLOR_SEPARATOR_FG);
+
 	wl_list_insert(&menu->menuitems, &menuitem->link);
 	return menuitem;
 }
@@ -280,6 +318,17 @@ handle_menu_element(xmlNode *n)
 	}
 }
 
+/* This can be one of <separator> and <separator label=""> */
+static void
+handle_separator_element(xmlNode *n)
+{
+	char *label = (char *)xmlGetProp(n, (const xmlChar *)"label");
+	current_item = separator_create(current_menu, label);
+	if (label) {
+		free(label);
+	}
+}
+
 static void
 xml_tree_walk(xmlNode *node)
 {
@@ -289,6 +338,10 @@ xml_tree_walk(xmlNode *node)
 		}
 		if (!strcasecmp((char *)n->name, "menu")) {
 			handle_menu_element(n);
+			continue;
+		}
+		if (!strcasecmp((char *)n->name, "separator")) {
+			handle_separator_element(n);
 			continue;
 		}
 		if (!strcasecmp((char *)n->name, "item")) {
@@ -513,13 +566,17 @@ menu_handle_cursor_motion(struct menu *menu, int x, int y)
 	struct menuitem *item;
 	wl_list_for_each (item, &menu->menuitems, link) {
 		if (!box_contains_point(&item->box, x, y)) {
+			/* Iterate over open submenus */
 			if (item->submenu && item->submenu->visible) {
 				menu_handle_cursor_motion(item->submenu, x, y);
 			}
 			continue;
 		}
+		if (!item->selectable) {
+			continue;
+		}
 		if (!item->submenu) {
-			/* cursor is over an ordinary (not submenu) item */
+			/* Cursor is over an ordinary (not submenu) item */
 			close_all_submenus(menu);
 			menu->state->selection = item;
 			break;
@@ -624,9 +681,12 @@ move_selection(struct state *state, enum trappist_direction direction)
 			? state->selection->link.next
 			: state->selection->link.prev;
 		state->selection = wl_container_of(list, item, link);
-	} while (&state->selection->link == &menu->menuitems);
+	} while (&state->selection->link == &menu->menuitems
+			|| !state->selection->selectable);
 	if (state->selection->submenu) {
 		open_submenu(state, state->selection);
+	} else {
+		close_all_submenus(menu);
 	}
 }
 
