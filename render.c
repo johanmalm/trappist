@@ -45,10 +45,10 @@ draw_menu(cairo_t *cairo, struct menu *menu)
 
 		if (menuitem != menu->state->selection) {
 			pixmap = menuitem->pixmap.inactive;
-			color_item_bg = COLOR_ITEM_BG_INACTIVE;
+			color_item_bg = COLOR_ITEM_INACTIVE_BG;
 		} else {
 			pixmap = menuitem->pixmap.active;
-			color_item_bg = COLOR_ITEM_BG_ACTIVE;
+			color_item_bg = COLOR_ITEM_ACTIVE_BG;
 		}
 		draw_rect(cairo, &menuitem->box, color_item_bg, true);
 		draw_pixmap(cairo, pixmap, &menuitem->box);

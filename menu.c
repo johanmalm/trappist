@@ -155,9 +155,9 @@ item_create(struct menu *menu, const char *text)
 	menuitem->box.width = MENU_ITEM_WIDTH;
 	menuitem->box.height = MENU_ITEM_HEIGHT;
 	font_surface_create(&menuitem->pixmap.active, text,
-		COLOR_ITEM_FG_ACTIVE);
+		COLOR_ITEM_ACTIVE_FG);
 	font_surface_create(&menuitem->pixmap.inactive, text,
-		COLOR_ITEM_FG_INACTIVE);
+		COLOR_ITEM_INACTIVE_FG);
 	wl_list_insert(&menu->menuitems, &menuitem->link);
 	return menuitem;
 }
