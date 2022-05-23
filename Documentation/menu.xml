@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openbox_menu>
+
+<menu id="root-menu" label="root-menu">
+
+  <item label="Terminal"><action name="Execute" command="sakura" /></item>
+  <item label="Browser"><action name="Execute" command="firefox" /></item>
+
+  <separator />
+
+  <menu id="Graphics" label="Graphics">
+    <item label="GIMP"><action name="Execute" command="gimp" /></item>
+    <item label="Inkscape"><action name="Execute" command="inkscape" /></item>
+    <item label="mtPaint"><action name="Execute" command="mtpaint" /></item>
+  </menu>
+
+  <menu id="Internet" label="Internet">
+    <item label="Chromium"><action name="Execute" command="chromium" /></item>
+    <item label="Firefox"><action name="Execute" command="firefox" /></item>
+    <item label="HexChat"><action name="Execute" command="hexchat" /></item>
+  </menu>
+
+  <menu id="Utilities" label="Utilities">
+    <item label="Alacritty"><action name="Execute" command="alacritty" /></item>
+    <item label="Foot"><action name="Execute" command="foot" /></item>
+    <item label="Qterminal"><action name="Execute" command="qterminal" /></item>
+    <item label="Sakura"><action name="Execute" command="sakura" /></item>
+    <item label="XTerm"><action name="Execute" command="xterm" /></item>
+    <item label="Files"><action name="Execute" command="nautilus" /></item>
+    <item label="Leafpad"><action name="Execute" command="leafpad" /></item>
+    <item label="Mousepad"><action name="Execute" command="mousepad" /></item>
+    <item label="Vim"><action name="Execute" command="xterm -c 'vim'" /></item>
+  </menu>
+
+  <separator />
+
+  <menu id="Exit" label="Exit">
+    <item label="Reconfigure"><action name="Execute" command="killall -SIGHUP labwc" /></item>
+    <item label="Logout"><action name="Execute" command="" /></item>
+    <menu id="Shutdown" label="Shutdown">
+      <item label="Suspend"><action name="Execute" command="systemctl suspend" /></item>
+      <item label="Reboot"><action name="Execute" command="systemctl reboot" /></item>
+      <item label="Poweroff"><action name="Execute" command="systemctl poweroff" /></item>
+    </menu>
+  </menu>
+
+</menu>
+
+</openbox_menu>
