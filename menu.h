@@ -7,13 +7,13 @@
 
 #define MENU_X (1)
 #define MENU_Y (30)
-#define MENU_ITEM_WIDTH (110)
+#define MENU_ITEM_WIDTH (170)
 #define MENU_ITEM_HEIGHT (30)
 #define MENU_ITEM_PADDING_X (4)
+#define MENU_ITEM_PADDING_Y (4)
 #define MENU_PADDING_X (1)
 #define MENU_PADDING_Y (1)
-#define MENU_FONT_NAME ("Sans")
-#define MENU_FONT_SIZE (9)
+#define MENU_FONT ("Sans 9")
 #define COLOR_MENU_BG (0x000000FF)
 #define COLOR_MENU_BORDER (0x222222FF)
 #define COLOR_ITEM_ACTIVE_BG (0x333333FF)
@@ -33,8 +33,10 @@ struct box {
 };
 
 struct menuitem {
+	char *label;
 	char *action;
 	char *command;
+	char *icon;
 	struct menu *submenu;
 	struct box box;
 	bool selectable;
@@ -59,6 +61,7 @@ struct menu {
 
 void menu_init(struct state *state, const char *filename);
 void menu_finish(struct state *state);
+void pixmap_pair_create(struct menuitem *item);
 void menu_move(struct menu *menu, int x, int y);
 void menu_handle_cursor_motion(struct menu *menu, int x, int y);
 void menu_handle_button_pressed(struct state *state, int x, int y);

@@ -7,31 +7,6 @@
 #include "trappist.h"
 
 static void
-draw_arrow(cairo_t *cairo, struct menuitem *menuitem, uint32_t color)
-{
-	int width = 10;
-	set_source_u32(cairo, color);
-	PangoLayout *layout = pango_cairo_create_layout(cairo);
-	pango_layout_set_width(layout, width * PANGO_SCALE);
-	pango_layout_set_text(layout, "›", -1);
-
-	PangoFontDescription *desc = pango_font_description_new();
-	pango_font_description_set_family(desc, MENU_FONT_NAME);
-	pango_font_description_set_size(desc, MENU_FONT_SIZE * PANGO_SCALE);
-	pango_layout_set_font_description(layout, desc);
-	pango_font_description_free(desc);
-
-	int h, offset_y;
-	pango_layout_get_pixel_size(layout, NULL, &h);
-	offset_y = (MENU_ITEM_HEIGHT - h) / 2;
-	struct box *box = &menuitem->box;
-	cairo_move_to(cairo, box->x + box->width - width, box->y + offset_y);
-	pango_cairo_update_layout(cairo, layout);
-	pango_cairo_show_layout(cairo, layout);
-	g_object_unref(layout);
-}
-
-static void
 draw_rect(cairo_t *cairo, struct box *box, uint32_t color, bool fill)
 {
 	cairo_save(cairo);
@@ -77,10 +52,6 @@ draw_menu(cairo_t *cairo, struct menu *menu)
 		}
 		draw_rect(cairo, &menuitem->box, color_item_bg, true);
 		draw_pixmap(cairo, pixmap, &menuitem->box);
-		if (menuitem->submenu) {
-			draw_arrow(cairo, menuitem, COLOR_ITEM_ACTIVE_FG);
-		}
-
 		if (menuitem->submenu && menuitem->submenu->visible) {
 			draw_menu(cairo, menuitem->submenu);
 		}

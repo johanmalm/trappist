@@ -75,64 +75,6 @@ string_truncate_at_pattern(char *buf, const char *pattern)
 	*p = '\0';
 }
 
-void
-font_surface_create(cairo_surface_t **pixmap, const char *text, uint32_t color)
-{
-	if (!text || !*text) {
-		return;
-	}
-	if (*pixmap) {
-		cairo_surface_destroy(*pixmap);
-		*pixmap = NULL;
-	}
-
-	*pixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-			MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT);
-	cairo_t *cairo = cairo_create(*pixmap);
-
-	set_source_u32(cairo, color);
-
-	PangoLayout *layout = pango_cairo_create_layout(cairo);
-	int width = MENU_ITEM_WIDTH - MENU_ITEM_PADDING_X * 2;
-	pango_layout_set_width(layout, width * PANGO_SCALE);
-	pango_layout_set_text(layout, text, -1);
-	pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
-
-	PangoFontDescription *desc = pango_font_description_new();
-	pango_font_description_set_family(desc, MENU_FONT_NAME);
-	pango_font_description_set_size(desc, MENU_FONT_SIZE * PANGO_SCALE);
-	pango_layout_set_font_description(layout, desc);
-	pango_font_description_free(desc);
-
-	int height, offset_y;
-	pango_layout_get_pixel_size(layout, NULL, &height);
-	offset_y = (MENU_ITEM_HEIGHT - height) / 2;
-	cairo_move_to(cairo, MENU_ITEM_PADDING_X, offset_y);
-	pango_cairo_update_layout(cairo, layout);
-	pango_cairo_show_layout(cairo, layout);
-
-	g_object_unref(layout);
-	cairo_destroy(cairo);
-}
-
-void
-separator_pixmap_create(cairo_surface_t **pixmap, uint32_t color)
-{
-	if (*pixmap) {
-		cairo_surface_destroy(*pixmap);
-		*pixmap = NULL;
-	}
-	*pixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-			MENU_ITEM_WIDTH, MENU_ITEM_HEIGHT);
-	cairo_t *cairo = cairo_create(*pixmap);
-	set_source_u32(cairo, color);
-	cairo_set_line_width(cairo, 1.0);
-	cairo_move_to(cairo, 3.0, 2.5);
-	cairo_line_to(cairo, MENU_ITEM_WIDTH - 3.0, 2.5);
-	cairo_stroke(cairo);
-	cairo_destroy(cairo);
-}
-
 static struct menu *
 menu_create(const char *id, const char *label)
 {
@@ -164,19 +106,16 @@ get_menu_by_id(const char *id)
 }
 
 static struct menuitem *
-item_create(struct menu *menu, const char *text)
+item_create(struct menu *menu, const char *label)
 {
 	struct menuitem *menuitem = calloc(1, sizeof(struct menuitem));
 	if (!menuitem) {
 		return NULL;
 	}
+	menuitem->label = strdup(label);
 	menuitem->box.width = MENU_ITEM_WIDTH;
 	menuitem->box.height = MENU_ITEM_HEIGHT;
 	menuitem->selectable = true;
-	font_surface_create(&menuitem->pixmap.active, text,
-		COLOR_ITEM_ACTIVE_FG);
-	font_surface_create(&menuitem->pixmap.inactive, text,
-		COLOR_ITEM_INACTIVE_FG);
 	wl_list_insert(&menu->menuitems, &menuitem->link);
 	return menuitem;
 }
@@ -191,18 +130,13 @@ separator_create(struct menu *menu, const char *label)
 	menuitem->box.width = MENU_ITEM_WIDTH;
 	menuitem->box.height = 5;
 	menuitem->selectable = false;
-	separator_pixmap_create(&menuitem->pixmap.inactive, COLOR_SEPARATOR_FG);
-
-	/* TODO: temporary only - remove */
-	separator_pixmap_create(&menuitem->pixmap.active, COLOR_SEPARATOR_FG);
-
 	wl_list_insert(&menu->menuitems, &menuitem->link);
 	return menuitem;
 }
 
 /*
  * Handle the following:
- * <item label="">
+ * <item label="" icon="">
  *   <action name="">
  *     <command></command>
  *   </action>
@@ -223,8 +157,11 @@ fill_item(char *nodename, char *content)
 	}
 	if (!strcmp(nodename, "name.action")) {
 		current_item->action = strdup(content);
-	} else if (!strcmp(nodename, "command.action")) {
+	} else if (!strcmp(nodename, "command.action")
+			|| !strcmp(nodename, "execute.action")) {
 		current_item->command = strdup(content);
+	} else if (!strcmp(nodename, "icon")) {
+		current_item->icon = strdup(content);
 	}
 }
 
@@ -415,6 +352,18 @@ first_selectable_menuitem(struct state *state)
 	return NULL;
 }
 
+static void
+generate_pixmaps(struct menu *menu)
+{
+	struct menuitem *item;
+	wl_list_for_each (item, &menu->menuitems, link) {
+		pixmap_pair_create(item);
+		if (item->submenu) {
+			generate_pixmaps(item->submenu);
+		}
+	}
+}
+
 void
 menu_init(struct state *state, const char *filename)
 {
@@ -440,6 +389,7 @@ menu_init(struct state *state, const char *filename)
 
 	state->menu->visible = true;
 	state->selection = first_selectable_menuitem(state);
+	generate_pixmaps(state->menu);
 	menu_move(state->menu, MENU_X, MENU_Y);
 }
 
@@ -451,11 +401,17 @@ menu_finish(struct state *state)
 		menu = menus + i;
 		struct menuitem *item, *next;
 		wl_list_for_each_safe(item, next, &menu->menuitems, link) {
+			if (item->label) {
+				free(item->label);
+			}
 			if (item->action) {
 				free(item->action);
 			}
 			if (item->command) {
 				free(item->command);
+			}
+			if (item->icon) {
+				free(item->icon);
 			}
 			cairo_surface_destroy(item->pixmap.active);
 			cairo_surface_destroy(item->pixmap.inactive);
