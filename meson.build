@@ -33,10 +33,6 @@ cairo = dependency('cairo')
 pangocairo = dependency('pangocairo')
 xml2 = dependency('libxml-2.0')
 
-### wlr-protocols
-r = run_command('git', 'clone', 'https://gitlab.freedesktop.org/wlroots/wlr-protocols.git', 'build/wlr-protocols', check: false)
-message(r.stderr().strip())
-
 subdir('sway-client-helpers')
 
 wayland_scanner = find_program('wayland-scanner')
@@ -58,8 +54,8 @@ client_protos_headers = []
 
 client_protocols = [
   [wl_protocol_dir, 'stable/xdg-shell/xdg-shell.xml'],
-  ['build/wlr-protocols', 'unstable/wlr-layer-shell-unstable-v1.xml'],
-  ['build/wlr-protocols', 'unstable/wlr-input-inhibitor-unstable-v1.xml'],
+  ['protocols', 'wlr-layer-shell-unstable-v1.xml'],
+  ['protocols', 'wlr-input-inhibitor-unstable-v1.xml'],
 ]
 
 foreach p : client_protocols

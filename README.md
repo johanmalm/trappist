@@ -11,7 +11,7 @@ Use [labwc-menu-gnome3] or hand-craft your own menu file using
 
 ## Goals
 
-- [ ] Openbox menu syntax
+- [x] Openbox menu syntax
 - [ ] Pipemenus
 - [ ] Type to search
 - [ ] Built-in support for system applications
@@ -28,8 +28,6 @@ Use [labwc-menu-gnome3] or hand-craft your own menu file using
 
 ## Dependencies
 
-- [x] https://gitlab.freedesktop.org/wlroots/wlr-protocols.git
-- [x] https://github.com/johanmalm/sway-client-helpers.git
 - [ ] https://gitlab.freedesktop.org/ddevault/fdicons.git
 
 [labwc-menu-gnome3]: https://github.com/labwc/labwc-menu-gnome3
