@@ -37,12 +37,13 @@ xml2 = dependency('libxml-2.0')
 r = run_command('git', 'clone', 'https://gitlab.freedesktop.org/wlroots/wlr-protocols.git', 'build/wlr-protocols', check: false)
 message(r.stderr().strip())
 
-sway_client_helpers_proj = subproject(
-  'sway-client-helpers',
-  default_options: ['default_library=static'],
-  required: true,
-)
-sway_client_helpers = sway_client_helpers_proj.get_variable('sway_client_helpers')
+subdir('sway-client-helpers')
+#sway_client_helpers_proj = subproject(
+#  'sway-client-helpers',
+#  default_options: ['default_library=static'],
+#  required: true,
+#)
+#sway_client_helpers = sway_client_helpers_proj.get_variable('sway_client_helpers')
 
 wayland_scanner = find_program('wayland-scanner')
 wl_protocol_dir = wayland_protos.get_variable('pkgdatadir')
