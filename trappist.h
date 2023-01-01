@@ -98,7 +98,6 @@ struct surface {
 	struct wl_output *wl_output;
 	struct wl_surface *surface;
 	struct pool_buffer buffers[2];
-	struct pool_buffer *current_buffer;
 	bool frame_pending, dirty;
 	uint32_t width, height;
 	struct zwlr_layer_surface_v1 *layer_surface;

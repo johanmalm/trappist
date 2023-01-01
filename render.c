@@ -79,21 +79,20 @@ render_frame(struct surface *surface)
 	if (!surface_is_configured(surface)) {
 		return;
 	}
-	surface->current_buffer = get_next_buffer(state->shm,
+	struct pool_buffer *buffer = get_next_buffer(state->shm,
 		surface->buffers, surface->width, surface->height);
-	if (!surface->current_buffer) {
+	if (!buffer) {
 		return;
 	}
 
-	cairo_t *cairo = surface->current_buffer->cairo;
+	cairo_t *cairo = buffer->cairo;
 	cairo_set_antialias(cairo, CAIRO_ANTIALIAS_BEST);
 	cairo_identity_matrix(cairo);
 
 	draw(cairo, state);
 
 	/* https://wayland-book.com/surfaces/shared-memory.html */
-	wl_surface_attach(surface->surface,
-		surface->current_buffer->buffer, 0, 0);
+	wl_surface_attach(surface->surface, buffer->buffer, 0, 0);
 	wl_surface_damage_buffer(surface->surface, 0, 0, INT32_MAX, INT32_MAX);
 	wl_surface_commit(surface->surface);
 }
