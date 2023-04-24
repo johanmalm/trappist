@@ -32,6 +32,10 @@ draw_pixmap(cairo_t *cairo, cairo_surface_t *pixmap, struct box *box)
 static void
 draw_menu(cairo_t *cairo, struct menu *menu)
 {
+	if (!menu->visible) {
+		return;
+	}
+
 	/* background */
 	draw_rect(cairo, &menu->box, COLOR_MENU_BG, true);
 

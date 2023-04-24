@@ -242,7 +242,8 @@ handle_wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
 	struct seat *seat = data;
 	struct pointer_event *event = &seat->pointer_event;
 
-	if (event->event_mask & POINTER_EVENT_MOTION) {
+	if ((event->event_mask & POINTER_EVENT_MOTION)
+			|| (event->event_mask & POINTER_EVENT_ENTER)) {
 		seat->pointer_x = wl_fixed_to_int(event->surface_x);
 		seat->pointer_y = wl_fixed_to_int(event->surface_y);
 		menu_handle_cursor_motion(seat->state->menu,

@@ -387,7 +387,7 @@ menu_init(struct state *state, const char *filename)
 		menu->state = state;
 	}
 
-	state->menu->visible = true;
+	state->menu->visible = false;
 	state->selection = first_selectable_menuitem(state);
 	generate_pixmaps(state->menu);
 	menu_move(state->menu, MENU_X, MENU_Y);
@@ -481,6 +481,9 @@ timer_hover_clear(void *data)
 	struct state *state = data;
 	state->hover_timer = NULL;
 
+	if (!state || !state->selection) {
+		return;
+	}
 	if (state->selection->submenu) {
 		open_submenu(state, state->selection);
 	}
@@ -513,9 +516,23 @@ box_contains_point(const struct box *box, double x, double y)
 		&& y >= box->y && y < box->y + box->height;
 }
 
+static void
+process_initial_position(struct menu *menu, int x, int y)
+{
+	menu_configure(menu, x, y);
+	surface_damage(menu->state->surface);
+	menu->visible = true;
+}
+
 void
 menu_handle_cursor_motion(struct menu *menu, int x, int y)
 {
+	static bool has_run;
+	if (!has_run) {
+		process_initial_position(menu, x, y);
+	}
+	has_run = true;
+
 	if (!menu->visible) {
 		return;
 	}
@@ -617,6 +634,9 @@ out:
 void
 menu_handle_button_released(struct state *state, int x, int y)
 {
+	if (!state || !state->selection) {
+		return;
+	}
 	spawn_async_no_shell(state->selection->command);
 	state->run_display = false;
 }
