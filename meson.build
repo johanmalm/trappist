@@ -54,7 +54,6 @@ protos_src = []
 client_protocols = [
   wl_protocol_dir / 'stable/xdg-shell/xdg-shell.xml',
   'protocols/wlr-layer-shell-unstable-v1.xml',
-  'protocols/wlr-input-inhibitor-unstable-v1.xml',
 ]
 
 foreach xml : client_protocols

@@ -28,7 +28,6 @@ struct state {
 	struct loop *eventloop;
 	struct loop_timer *hover_timer;
 	struct zwlr_layer_shell_v1 *layer_shell;
-	struct zwlr_input_inhibit_manager_v1 *input_inhibit_manager;
 };
 
 /* TODO: Use scale and subpixel */

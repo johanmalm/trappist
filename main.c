@@ -8,7 +8,6 @@
 #include <sway-client-helpers/loop.h>
 #include "menu.h"
 #include "trappist.h"
-#include "wlr-input-inhibitor-unstable-v1-client-protocol.h"
 
 static struct state state = { 0 };
 
@@ -44,15 +43,8 @@ main(int argc, char *argv[])
 	DIE_ON(!state.shm, "no shm");
 	DIE_ON(!state.seat, "no seat");
 	DIE_ON(!state.layer_shell, "no layer-shell");
-	DIE_ON(!state.input_inhibit_manager, "no input-inhibit-manager");
 
 	state.seat->xkb.context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-
-	zwlr_input_inhibit_manager_v1_get_inhibitor(state.input_inhibit_manager);
-	if (wl_display_roundtrip(state.display) == -1) {
-		LOG(LOG_ERROR, "failed to inhibit input");
-		exit(EXIT_FAILURE);
-	}
 
 	state.seat->cursor_surface =
 		wl_compositor_create_surface(state.compositor);

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #include <sway-client-helpers/log.h>
 #include "trappist.h"
-#include "wlr-input-inhibitor-unstable-v1-client-protocol.h"
 #include "wlr-layer-shell-unstable-v1-client-protocol.h"
 
 static void
@@ -26,10 +25,6 @@ handle_wl_registry_global(void *data, struct wl_registry *registry,
 	} else if (!strcmp(interface, zwlr_layer_shell_v1_interface.name)) {
 		state->layer_shell = wl_registry_bind(
 			registry, name, &zwlr_layer_shell_v1_interface, 4);
-	} else if (!strcmp(interface,
-			zwlr_input_inhibit_manager_v1_interface.name)) {
-		state->input_inhibit_manager = wl_registry_bind(registry, name,
-				&zwlr_input_inhibit_manager_v1_interface, 1);
 	} else if (!strcmp(interface, wl_output_interface.name)) {
 		struct wl_output *wl_output = wl_registry_bind(registry, name,
 				&wl_output_interface, 4);

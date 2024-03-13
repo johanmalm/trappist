@@ -48,8 +48,8 @@ surface_layer_surface_create(struct surface *surface)
 			ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM |
 			ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
 	zwlr_layer_surface_v1_set_exclusive_zone(surface->layer_surface, -1);
-	zwlr_layer_surface_v1_set_keyboard_interactivity(
-			surface->layer_surface, true);
+	zwlr_layer_surface_v1_set_keyboard_interactivity(surface->layer_surface,
+		ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND);
 	zwlr_layer_surface_v1_add_listener(surface->layer_surface,
 			&layer_surface_listener, surface);
 	wl_surface_commit(surface->surface);
