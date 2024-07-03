@@ -16,6 +16,7 @@
 #include <sway-client-helpers/util.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "icon.h"
 #include "menu.h"
 #include "trappist.h"
 
@@ -364,6 +365,23 @@ generate_pixmaps(struct menu *menu)
 	}
 }
 
+static void
+post_processing(struct menu *menu)
+{
+	/* Resolve icons so that item->icon contains full path to the icon */
+	struct menuitem *item;
+	wl_list_for_each (item, &menu->menuitems, link) {
+		if (item->icon && item->icon[0] != '/') {
+			const char *icon = icon_strdup_path(item->icon);
+			free(item->icon);
+			item->icon = (char *)icon;
+		}
+		if (item->submenu) {
+			post_processing(item->submenu);
+		}
+	}
+}
+
 void
 menu_init(struct state *state, const char *filename)
 {
@@ -389,6 +407,7 @@ menu_init(struct state *state, const char *filename)
 
 	state->menu->visible = false;
 	state->selection = first_selectable_menuitem(state);
+	post_processing(state->menu);
 	generate_pixmaps(state->menu);
 	menu_move(state->menu, MENU_X, MENU_Y);
 }

@@ -11,6 +11,7 @@ project(
 add_project_arguments(
   [
     '-Wno-unused-parameter',
+    '-D_XOPEN_SOURCE=700',
   ],
   language: 'c',
 )
@@ -73,6 +74,7 @@ dependencies = [
 
 sources = files(
   'globals.c',
+  'icon.c',
   'main.c',
   'menu.c',
   'output.c',
@@ -81,11 +83,15 @@ sources = files(
   'search.c',
   'seat.c',
   'surface.c',
+  'fdicons/src/database.c',
+  'fdicons/src/ini.c',
+  'fdicons/src/lookup.c',
 )
 
 executable(
   meson.project_name(),
   sources + protos_src,
+  include_directories: ['fdicons/include'],
   dependencies: dependencies,
 )
 
