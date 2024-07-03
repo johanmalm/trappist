@@ -1,0 +1,6 @@
+{
+	global:
+		fd_icon_*;
+	local:
+		*;
+};

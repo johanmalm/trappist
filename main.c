@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sway-client-helpers/log.h>
 #include <sway-client-helpers/loop.h>
+#include "icon.h"
 #include "menu.h"
 #include "trappist.h"
 
@@ -67,6 +68,8 @@ main(int argc, char *argv[])
 
 	surface_layer_surface_create(state.surface);
 
+	icon_init();
+
 	const char *filename = argc > 1 ? argv[1] : NULL;
 	menu_init(&state, filename);
 
@@ -88,6 +91,7 @@ main(int argc, char *argv[])
 	if (state.seat->cursor_theme) {
 		wl_cursor_theme_destroy(state.seat->cursor_theme);
 	}
+	icon_finish();
 	pango_cairo_font_map_set_default(NULL);
 	return 0;
 }
