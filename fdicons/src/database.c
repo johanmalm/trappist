@@ -377,6 +377,7 @@ fd_icon_database_add_path(struct fd_icon_database *database, const char *path)
 		*next = theme;
 		next = &theme->next;
 	}
+	closedir(dir);
 }
 
 static void
