@@ -33,6 +33,7 @@ xkbcommon = dependency('xkbcommon')
 cairo = dependency('cairo')
 pangocairo = dependency('pangocairo')
 xml2 = dependency('libxml-2.0')
+svg = dependency('librsvg-2.0', version: '>=2.46', required: false)
 
 subdir('sway-client-helpers')
 
@@ -69,6 +70,7 @@ dependencies = [
   wayland_client,
   wayland_cursor,
   sway_client_helpers,
+  svg,
   xml2,
 ]
 
