@@ -215,6 +215,7 @@ handle_menu_element(xmlNode *n)
 	char *label = (char *)xmlGetProp(n, (const xmlChar *)"label");
 	char *execute = (char *)xmlGetProp(n, (const xmlChar *)"execute");
 	char *id = (char *)xmlGetProp(n, (const xmlChar *)"id");
+	char *icon = (char *)xmlGetProp(n, (const xmlChar *)"icon");
 
 	if (execute) {
 		LOG(LOG_ERROR, "we do not support pipemenus - yet");
@@ -226,6 +227,9 @@ handle_menu_element(xmlNode *n)
 			 * create an item pointing to the new submenu
 			 */
 			current_item = item_create(current_menu, label);
+			if (icon) {
+				current_item->icon = strdup(icon);
+			}
 			submenu = &current_item->submenu;
 		}
 		++menu_level;
@@ -245,15 +249,10 @@ handle_menu_element(xmlNode *n)
 			LOG(LOG_ERROR, "no menu with id '%s'", id);
 		}
 	}
-	if (label) {
-		free(label);
-	}
-	if (execute) {
-		free(execute);
-	}
-	if (id) {
-		free(id);
-	}
+	free(label);
+	free(execute);
+	free(id);
+	free(icon);
 }
 
 /* This can be one of <separator> and <separator label=""> */
@@ -420,18 +419,10 @@ menu_finish(struct state *state)
 		menu = menus + i;
 		struct menuitem *item, *next;
 		wl_list_for_each_safe(item, next, &menu->menuitems, link) {
-			if (item->label) {
-				free(item->label);
-			}
-			if (item->action) {
-				free(item->action);
-			}
-			if (item->command) {
-				free(item->command);
-			}
-			if (item->icon) {
-				free(item->icon);
-			}
+			free(item->label);
+			free(item->action);
+			free(item->command);
+			free(item->icon);
 			cairo_surface_destroy(item->pixmap.active);
 			cairo_surface_destroy(item->pixmap.inactive);
 			wl_list_remove(&item->link);
