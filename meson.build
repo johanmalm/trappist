@@ -87,6 +87,7 @@ sources = files(
   'surface.c',
   'ccan/ccan/ciniparser/ciniparser.c',
   'ccan/ccan/ciniparser/dictionary.c',
+  'ccan/ccan/err/err.c',
   'ccan/ccan/opt/helpers.c',
   'ccan/ccan/opt/opt.c',
   'ccan/ccan/opt/parse.c',

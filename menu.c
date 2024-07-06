@@ -294,10 +294,7 @@ xml_tree_walk(xmlNode *node)
 static void
 parse_xml(const char *filename)
 {
-	if (!filename) {
-		LOG(LOG_INFO, "no menu.xml specified");
-		return;
-	}
+	assert(filename);
 	xmlDoc * d = xmlReadFile(filename, NULL, 0);
 	if (!d) {
 		LOG(LOG_ERROR, "xmlReadFile()");
@@ -384,6 +381,7 @@ post_processing(struct menu *menu)
 void
 menu_init(struct state *state, const char *filename)
 {
+	assert(filename);
 	parse_xml(filename);
 	state->menu = get_menu_by_id("root-menu");
 
