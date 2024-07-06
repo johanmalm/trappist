@@ -85,15 +85,27 @@ sources = files(
   'search.c',
   'seat.c',
   'surface.c',
+  'ccan/ccan/ciniparser/ciniparser.c',
+  'ccan/ccan/ciniparser/dictionary.c',
+  'ccan/ccan/opt/helpers.c',
+  'ccan/ccan/opt/opt.c',
+  'ccan/ccan/opt/parse.c',
+  'ccan/ccan/opt/usage.c',
   'fdicons/src/database.c',
   'fdicons/src/ini.c',
   'fdicons/src/lookup.c',
 )
 
+trappist_inc = include_directories(
+  '.',
+  'fdicons/include',
+  'ccan',
+)
+
 executable(
   meson.project_name(),
   sources + protos_src,
-  include_directories: ['fdicons/include'],
+  include_directories: trappist_inc,
   dependencies: dependencies,
 )
 
