@@ -75,16 +75,16 @@ dependencies = [
 ]
 
 sources = files(
-  'globals.c',
-  'icon.c',
-  'main.c',
-  'menu.c',
-  'output.c',
-  'pixmap.c',
-  'render.c',
-  'search.c',
-  'seat.c',
-  'surface.c',
+  'src/globals.c',
+  'src/icon.c',
+  'src/main.c',
+  'src/menu.c',
+  'src/output.c',
+  'src/pixmap.c',
+  'src/render.c',
+  'src/search.c',
+  'src/seat.c',
+  'src/surface.c',
   'ccan/ccan/ciniparser/ciniparser.c',
   'ccan/ccan/ciniparser/dictionary.c',
   'ccan/ccan/err/err.c',
@@ -98,7 +98,7 @@ sources = files(
 )
 
 trappist_inc = include_directories(
-  '.',
+  'include',
   'fdicons/include',
   'ccan',
 )
