@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #define _POSIX_C_SOURCE 200809L
+#include <ccan/opt/opt.h>
 #include <getopt.h>
 #include <poll.h>
 #include <stdio.h>
@@ -9,6 +10,25 @@
 #include "icon.h"
 #include "menu.h"
 #include "trappist.h"
+
+static bool show_version;
+static int verbose;
+static char *config_file;
+static char *menu_file;
+
+static struct opt_table opts[] = {
+	OPT_WITH_ARG("-c|--config-file=<filename>", opt_set_charp, opt_show_charp,
+	     &config_file, "Specify config file (with path)"),
+	OPT_WITHOUT_ARG("-h|--help", opt_usage_and_exit, "[options...]",
+		"Show help message and quit"),
+	OPT_WITH_ARG("-m|--menu-file=<filename>", opt_set_charp, opt_show_charp,
+	     &menu_file, "Specify menu file (with path)"),
+	OPT_WITHOUT_ARG("-v|--version", opt_set_bool, &show_version,
+		"Show version and quit"),
+	OPT_WITHOUT_ARG("-V|--verbose", opt_inc_intval, &verbose,
+		"Enable more verbose logging; can be specified twice"),
+	OPT_ENDTABLE
+};
 
 static struct state state = { 0 };
 
@@ -30,7 +50,21 @@ display_in(int fd, short mask, void *data)
 int
 main(int argc, char *argv[])
 {
-	log_init(LOG_DEBUG);
+	opt_register_table(opts, NULL);
+	if (!opt_parse(&argc, argv, opt_log_stderr)) {
+		exit(EXIT_FAILURE);
+	}
+
+	if (show_version) {
+		printf("No version exists yet\n");
+		exit(EXIT_FAILURE);
+	}
+
+	enum log_importance importance = LOG_ERROR + verbose;
+	importance = MIN(importance, LOG_DEBUG);
+	log_init(importance);
+
+	LOG(LOG_DEBUG, "hello");
 
 	wl_list_init(&state.outputs);
 
@@ -70,8 +104,7 @@ main(int argc, char *argv[])
 
 	icon_init();
 
-	const char *filename = argc > 1 ? argv[1] : NULL;
-	menu_init(&state, filename);
+	menu_init(&state, menu_file);
 
 	state.eventloop = loop_create();
 	loop_add_fd(state.eventloop, wl_display_get_fd(state.display), POLLIN,
