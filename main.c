@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 #define _POSIX_C_SOURCE 200809L
 #include <ccan/opt/opt.h>
+#include <ccan/err/err.h>
 #include <getopt.h>
 #include <poll.h>
 #include <stdio.h>
@@ -50,6 +51,8 @@ display_in(int fd, short mask, void *data)
 int
 main(int argc, char *argv[])
 {
+	err_set_progname(argv[0]);
+
 	opt_register_table(opts, NULL);
 	if (!opt_parse(&argc, argv, opt_log_stderr)) {
 		exit(EXIT_FAILURE);
@@ -63,8 +66,6 @@ main(int argc, char *argv[])
 	enum log_importance importance = LOG_ERROR + verbose;
 	importance = MIN(importance, LOG_DEBUG);
 	log_init(importance);
-
-	LOG(LOG_DEBUG, "hello");
 
 	wl_list_init(&state.outputs);
 
@@ -104,6 +105,9 @@ main(int argc, char *argv[])
 
 	icon_init();
 
+	if (!menu_file) {
+		errx(EXIT_FAILURE, "cannot find menu file");
+	}
 	menu_init(&state, menu_file);
 
 	state.eventloop = loop_create();
