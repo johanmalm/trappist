@@ -305,16 +305,94 @@ parse_xml(const char *filename)
 	xmlCleanupParser();
 }
 
-static void
-menu_configure(struct menu *menu, int x, int y)
+static int
+get_menu_height(struct menu *menu)
 {
-	menu->box.x = x;
-	menu->box.y = y;
+	int height = 0;
+	struct menuitem *menuitem;
+	wl_list_for_each(menuitem, &menu->menuitems, link) {
+		height += menuitem->box.height;
+	}
+	return height;
+}
 
-	int menu_overlap_x = 0;
+void
+flip(bool *value)
+{
+	*value = !*value;
+}
+
+/**
+ * configure() - Set the position of a menu window
+ * @menu:   Menu to position
+ * @screen: Screen size
+ * @ref:    Reference box to align to. For a toplevel menu this should just be
+ *          a position without size, whereas for a submenu it refers to the
+ *          parent menu item box which triggered the submenu.
+ */
+static void
+configure(struct menu *menu, struct box *screen, struct box *ref)
+{
+	menu->box.width = MENU_ITEM_WIDTH + 2 * MENU_PADDING_X;
+	menu->box.height = get_menu_height(menu) + MENU_PADDING_Y * 2;
+
+	/* TODO: get from config */
+	int menu_overlap_x = -4;
 	int menu_overlap_y = 0;
 
-	int menu_width = MENU_ITEM_WIDTH + 2 * MENU_PADDING_X;
+	int ref_width = ref->width ? ref->width - menu_overlap_x : 0;
+	int ref_height = ref->height ? ref->height - menu_overlap_y : 0;
+
+	/* TODO: Include MENU_PADDING_X,Y below */
+
+	if (!menu->parent) {
+		LOG(LOG_DEBUG, "ref->x=%d; ref_width=%d; menu->box.width=%d",
+			ref->x, ref_width, menu->box.width);
+	}
+
+	if (!menu->right_aligned) {
+		/*
+		 * Let's start with the left-aligned case which which is what
+		 * we get with a toplevel menu and with submenus where they
+		 * inherited that alignment from their parent...
+		 */
+		if (ref->x + ref_width + menu->box.width > screen->width) {
+			/* Does NOT fit on screen */
+			flip(&menu->right_aligned);
+			menu->box.x = ref->x - menu->box.width + menu_overlap_x;
+		} else {
+			/* Fits on screen */
+			menu->box.x = ref->x + ref_width;
+		}
+	} else {
+		/* We inherited right-alignment... */
+		if (ref->x - menu->box.width + menu_overlap_x < 0) {
+			flip(&menu->right_aligned);
+			menu->box.x = ref->x + ref_width;
+		} else {
+			menu->box.x = ref->x - menu->box.width + menu_overlap_x;
+		}
+	}
+
+	/* Okay, here we go again but vertically this time */
+	if (!menu->bottom_aligned) {
+		if (ref->y + menu->box.height - menu_overlap_y > screen->height) {
+			/* make it bottom aligned */
+			flip(&menu->bottom_aligned);
+			menu->box.y = ref->y + ref_height - menu->box.height;
+		} else {
+			menu->box.y = ref->y;
+			menu->box.y -= ref->height ? menu_overlap_y : 0;
+		}
+	} else {
+		if (ref->y + ref_height - menu->box.height < 0) {
+			flip(&menu->bottom_aligned);
+			menu->box.y = ref->y;
+			menu->box.y -= ref->height ? menu_overlap_y : 0;
+		} else {
+			menu->box.y = ref->y + ref_height - menu->box.height;
+		}
+	}
 
 	int offset = 0;
 	struct menuitem *menuitem;
@@ -323,15 +401,30 @@ menu_configure(struct menu *menu, int x, int y)
 		menuitem->box.y = menu->box.y + MENU_PADDING_Y + offset;
 		offset += menuitem->box.height;
 		if (menuitem->submenu) {
-			menu_configure(menuitem->submenu, menuitem->box.x
-				+ menu_width - menu_overlap_x,
-				menuitem->box.y - MENU_PADDING_Y
-				+ menu_overlap_y);
+			menuitem->submenu->right_aligned = menu->right_aligned;
+			menuitem->submenu->bottom_aligned = menu->bottom_aligned;
+			configure(menuitem->submenu, screen, &menuitem->box);
 		}
 	}
+}
 
-	menu->box.width = menu_width;
-	menu->box.height = offset + MENU_PADDING_Y * 2;
+static void
+menu_configure(struct menu *menu, int x, int y)
+{
+	struct state *state = menu->state;
+	struct box screen = {
+		.width = state->surface->width,
+		.height= state->surface->height,
+	};
+	if (!screen.width || !screen.height) {
+		return;
+	}
+	LOG(LOG_DEBUG, "screen: %dx%d", screen.width, screen.height);
+	struct box ref = {
+		.x = x,
+		.y = y,
+	};
+	configure(menu, &screen, &ref);
 }
 
 static struct menuitem *
