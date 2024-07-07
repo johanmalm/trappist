@@ -54,6 +54,8 @@ struct menu {
 	bool visible;
 	struct menu *parent;
 	struct box box;
+	bool right_aligned;
+	bool bottom_aligned;
 	struct wl_list menuitems;
 
 	struct state *state;
