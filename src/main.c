@@ -2,7 +2,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include <ccan/opt/opt.h>
 #include <ccan/err/err.h>
-#include <getopt.h>
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
