@@ -63,6 +63,16 @@ foreach xml : client_protocols
   protos_src += wayland_scanner_client.process(xml)
 endforeach
 
+sfdo_icon = dependency(
+  'libsfdo-icon',
+  version: '>=0.1.0',
+  fallback: 'libsfdo',
+  default_options: [
+    'default_library=static',
+    'examples=false',
+  ],
+)
+
 dependencies = [
   cairo,
   pangocairo,
@@ -72,6 +82,7 @@ dependencies = [
   sway_client_helpers,
   svg,
   xml2,
+  sfdo_icon,
 ]
 
 sources = files(
