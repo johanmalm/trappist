@@ -18,11 +18,11 @@ static char *menu_file;
 
 static struct opt_table opts[] = {
 	OPT_WITH_ARG("-c|--config-file=<filename>", opt_set_charp, opt_show_charp,
-	     &config_file, "Specify config file (with path)"),
+		&config_file, "Specify config file (with path)"),
 	OPT_WITHOUT_ARG("-h|--help", opt_usage_and_exit, "[options...]",
 		"Show help message and quit"),
 	OPT_WITH_ARG("-m|--menu-file=<filename>", opt_set_charp, opt_show_charp,
-	     &menu_file, "Specify menu file (with path)"),
+		&menu_file, "Specify menu file (with path)"),
 	OPT_WITHOUT_ARG("-v|--version", opt_set_bool, &show_version,
 		"Show version and quit"),
 	OPT_WITHOUT_ARG("-V|--verbose", opt_inc_intval, &verbose,

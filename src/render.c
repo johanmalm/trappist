@@ -43,7 +43,7 @@ draw_menu(cairo_t *cairo, struct menu *menu)
 	draw_rect(cairo, &menu->box, COLOR_MENU_BORDER, false);
 
 	struct menuitem *menuitem;
-	wl_list_for_each (menuitem, &menu->menuitems, link) {
+	wl_list_for_each(menuitem, &menu->menuitems, link) {
 		cairo_surface_t *pixmap;
 		uint32_t color_item_bg;
 

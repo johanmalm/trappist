@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 #include <assert.h>
 #include <sfdo-basedir.h>
 #include <sfdo-icon.h>

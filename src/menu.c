@@ -295,7 +295,7 @@ static void
 parse_xml(const char *filename)
 {
 	assert(filename);
-	xmlDoc * d = xmlReadFile(filename, NULL, 0);
+	xmlDoc *d = xmlReadFile(filename, NULL, 0);
 	if (!d) {
 		LOG(LOG_ERROR, "xmlReadFile()");
 		return;
@@ -352,9 +352,9 @@ configure(struct menu *menu, struct box *screen, struct box *ref)
 
 	if (!menu->right_aligned) {
 		/*
-		 * Let's start with the left-aligned case which which is what
-		 * we get with a toplevel menu and with submenus where they
-		 * inherited that alignment from their parent...
+		 * Let's start with the left-aligned case which is what we get
+		 * with a toplevel menu and with submenus where they inherited
+		 * that alignment from their parent...
 		 */
 		if (ref->x + ref_width + menu->box.width > screen->width) {
 			/* Does NOT fit on screen */
@@ -414,7 +414,7 @@ menu_configure(struct menu *menu, int x, int y)
 	struct state *state = menu->state;
 	struct box screen = {
 		.width = state->surface->width,
-		.height= state->surface->height,
+		.height = state->surface->height,
 	};
 	if (!screen.width || !screen.height) {
 		return;
@@ -446,7 +446,7 @@ static void
 generate_pixmaps(struct menu *menu)
 {
 	struct menuitem *item;
-	wl_list_for_each (item, &menu->menuitems, link) {
+	wl_list_for_each(item, &menu->menuitems, link) {
 		pixmap_pair_create(item);
 		if (item->submenu) {
 			generate_pixmaps(item->submenu);
@@ -459,7 +459,7 @@ post_processing(struct menu *menu)
 {
 	/* Resolve icons so that item->icon contains full path to the icon */
 	struct menuitem *item;
-	wl_list_for_each (item, &menu->menuitems, link) {
+	wl_list_for_each(item, &menu->menuitems, link) {
 		if (item->icon && item->icon[0] != '/') {
 			const char *icon = icon_strdup_path(item->icon);
 			free(item->icon);
@@ -533,7 +533,7 @@ static void
 close_all_submenus(struct menu *menu)
 {
 	struct menuitem *item;
-	wl_list_for_each (item, &menu->menuitems, link) {
+	wl_list_for_each(item, &menu->menuitems, link) {
 		if (item->submenu) {
 			item->submenu->visible = false;
 			close_all_submenus(item->submenu);
@@ -557,7 +557,7 @@ menu_from_item(struct state *state, struct menuitem *menuitem)
 	for (int i = 0; i < nr_menus; ++i) {
 		menu = menus + i;
 		struct menuitem *item;
-		wl_list_for_each (item, &menu->menuitems, link) {
+		wl_list_for_each(item, &menu->menuitems, link) {
 			if (item == menuitem) {
 				return menu;
 			}
@@ -638,7 +638,7 @@ menu_handle_cursor_motion(struct menu *menu, int x, int y)
 		return;
 	}
 	struct menuitem *item;
-	wl_list_for_each (item, &menu->menuitems, link) {
+	wl_list_for_each(item, &menu->menuitems, link) {
 		if (!box_contains_point(&item->box, x, y)) {
 			/* Iterate over open submenus */
 			if (item->submenu && item->submenu->visible) {
@@ -774,7 +774,7 @@ parent_of(struct state *state, struct menuitem *menuitem)
 	for (int i = 0; i < nr_menus; ++i) {
 		struct menu *menu = menus + i;
 		struct menuitem *item;
-		wl_list_for_each (item, &menu->menuitems, link) {
+		wl_list_for_each(item, &menu->menuitems, link) {
 			if (item->submenu == child) {
 				return item;
 			}
