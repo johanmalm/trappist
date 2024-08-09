@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <sway-client-helpers/log.h>
 #include <sway-client-helpers/loop.h>
+#include "conf.h"
 #include "icon.h"
 #include "menu.h"
 #include "trappist.h"
@@ -66,6 +67,13 @@ main(int argc, char *argv[])
 	importance = MIN(importance, LOG_DEBUG);
 	log_init(importance);
 
+	if (!menu_file) {
+		errx(EXIT_FAILURE, "cannot find menu file");
+	}
+
+	struct conf conf = { 0 };
+	conf_init(&conf, config_file);
+
 	wl_list_init(&state.outputs);
 
 	state.display = wl_display_connect(NULL);
@@ -104,10 +112,7 @@ main(int argc, char *argv[])
 
 	icon_init();
 
-	if (!menu_file) {
-		errx(EXIT_FAILURE, "cannot find menu file");
-	}
-	menu_init(&state, menu_file);
+	menu_init(&state, &conf, menu_file);
 
 	state.eventloop = loop_create();
 	loop_add_fd(state.eventloop, wl_display_get_fd(state.display), POLLIN,

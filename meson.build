@@ -34,6 +34,8 @@ cairo = dependency('cairo')
 pangocairo = dependency('pangocairo')
 xml2 = dependency('libxml-2.0')
 svg = dependency('librsvg-2.0', version: '>=2.46', required: false)
+inih = dependency('inih')
+
 
 subdir('sway-client-helpers')
 
@@ -83,9 +85,11 @@ dependencies = [
   svg,
   xml2,
   sfdo_icon,
+  inih,
 ]
 
 sources = files(
+  'src/conf.c',
   'src/globals.c',
   'src/icon.c',
   'src/main.c',

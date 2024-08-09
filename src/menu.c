@@ -16,6 +16,7 @@
 #include <sway-client-helpers/util.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "conf.h"
 #include "icon.h"
 #include "menu.h"
 #include "trappist.h"
@@ -443,13 +444,13 @@ first_selectable_menuitem(struct state *state)
 }
 
 static void
-generate_pixmaps(struct menu *menu)
+generate_pixmaps(struct menu *menu, struct conf *conf)
 {
 	struct menuitem *item;
 	wl_list_for_each(item, &menu->menuitems, link) {
-		pixmap_pair_create(item);
+		pixmap_pair_create(item, conf);
 		if (item->submenu) {
-			generate_pixmaps(item->submenu);
+			generate_pixmaps(item->submenu, conf);
 		}
 	}
 }
@@ -472,7 +473,7 @@ post_processing(struct menu *menu)
 }
 
 void
-menu_init(struct state *state, const char *filename)
+menu_init(struct state *state, struct conf *conf, const char *filename)
 {
 	assert(filename);
 	parse_xml(filename);
@@ -498,7 +499,7 @@ menu_init(struct state *state, const char *filename)
 	state->menu->visible = false;
 	state->selection = first_selectable_menuitem(state);
 	post_processing(state->menu);
-	generate_pixmaps(state->menu);
+	generate_pixmaps(state->menu, conf);
 	menu_move(state->menu, MENU_X, MENU_Y);
 }
 
