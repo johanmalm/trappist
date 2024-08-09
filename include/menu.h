@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef _TRAPPIST_MENU_H
-#define _TRAPPIST_MENU_H
+#ifndef TRAPPIST_MENU_H
+#define TRAPPIST_MENU_H
 #include <cairo.h>
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-server.h>
@@ -71,4 +71,4 @@ void menu_handle_button_released(struct state *state, int x, int y);
 void menu_handle_key(struct state *state, xkb_keysym_t keysym,
 	uint32_t codepoint);
 
-#endif /* _TRAPPIST_MENU_H */
+#endif /* TRAPPIST_MENU_H */

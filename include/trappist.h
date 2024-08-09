@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#ifndef _TRAPPIST_H
-#define _TRAPPIST_H
+#ifndef TRAPPIST_H
+#define TRAPPIST_H
 #include <cairo.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -115,4 +115,4 @@ void search_remove_last_uft8_character(void);
 void search_add_utf8_character(uint32_t codepoint);
 char *search_str(void);
 
-#endif /* _TRAPPIST_H */
+#endif /* TRAPPIST_H */
