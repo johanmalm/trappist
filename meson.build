@@ -103,14 +103,10 @@ sources = files(
   'ccan/ccan/opt/opt.c',
   'ccan/ccan/opt/parse.c',
   'ccan/ccan/opt/usage.c',
-  'fdicons/src/database.c',
-  'fdicons/src/ini.c',
-  'fdicons/src/lookup.c',
 )
 
 trappist_inc = include_directories(
   'include',
-  'fdicons/include',
   'ccan',
 )
 
