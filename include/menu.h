@@ -24,6 +24,7 @@
 #define TRAPPIST_SUBMENU_SHOW_DELAY (100)
 
 struct state;
+struct conf;
 
 struct box {
 	int x;
@@ -61,9 +62,9 @@ struct menu {
 	struct state *state;
 };
 
-void menu_init(struct state *state, const char *filename);
+void menu_init(struct state *state, struct conf *conf, const char *filename);
 void menu_finish(struct state *state);
-void pixmap_pair_create(struct menuitem *item);
+void pixmap_pair_create(struct menuitem *item, struct conf *conf);
 void menu_move(struct menu *menu, int x, int y);
 void menu_handle_cursor_motion(struct menu *menu, int x, int y);
 void menu_handle_button_pressed(struct state *state, int x, int y);

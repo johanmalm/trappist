@@ -18,6 +18,7 @@
 #include <sway-client-helpers/util.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "conf.h"
 #include "menu.h"
 #include "trappist.h"
 
@@ -98,7 +99,8 @@ ends_with(const char *string, const char *ending)
 }
 
 static void
-render_menu_entry(cairo_surface_t **pixmap, struct menuitem *item, uint32_t color)
+render_menu_entry(cairo_surface_t **pixmap, struct menuitem *item,
+		struct conf *conf, uint32_t color)
 {
 	if (!item || !item->label || !*item->label) {
 		return;
@@ -106,7 +108,7 @@ render_menu_entry(cairo_surface_t **pixmap, struct menuitem *item, uint32_t colo
 	cairo_t *cairo = cairo_create(*pixmap);
 
 	int scale = 1.0;
-	int icon_size = item->box.height - 2 * MENU_ITEM_PADDING_Y;
+//	int icon_size = item->box.height - 2 * MENU_ITEM_PADDING_Y;
 
 	int font_height, font_baseline;
 	get_text_metrics(MENU_FONT, &font_height, &font_baseline);
@@ -114,7 +116,7 @@ render_menu_entry(cairo_surface_t **pixmap, struct menuitem *item, uint32_t colo
 
 	set_source_u32(cairo, color);
 
-	cairo_move_to(cairo, icon_size + MENU_ITEM_PADDING_X * 2, offset_y);
+	cairo_move_to(cairo, conf->icon.size + MENU_ITEM_PADDING_X * 2, offset_y);
 	render_text(cairo, MENU_FONT, scale, item->label);
 
 	if (item->submenu) {
@@ -124,9 +126,9 @@ render_menu_entry(cairo_surface_t **pixmap, struct menuitem *item, uint32_t colo
 
 	if (item->icon && *item->icon) {
 		if (ends_with(item->icon, ".png")) {
-			add_png(cairo, item->icon, icon_size);
+			add_png(cairo, item->icon, conf->icon.size);
 		} else if (ends_with(item->icon, ".svg")) {
-			add_svg(cairo, item->icon, icon_size);
+			add_svg(cairo, item->icon, conf->icon.size);
 		}
 	}
 
@@ -157,15 +159,15 @@ pixmap_create(cairo_surface_t **pixmap, struct box *box)
 }
 
 void
-pixmap_pair_create(struct menuitem *item)
+pixmap_pair_create(struct menuitem *item, struct conf *conf)
 {
 	pixmap_create(&item->pixmap.active, &item->box);
 	pixmap_create(&item->pixmap.inactive, &item->box);
 
 	if (item->selectable) {
-		render_menu_entry(&item->pixmap.active, item,
+		render_menu_entry(&item->pixmap.active, item, conf,
 			COLOR_ITEM_ACTIVE_FG);
-		render_menu_entry(&item->pixmap.inactive, item,
+		render_menu_entry(&item->pixmap.inactive, item, conf,
 			COLOR_ITEM_INACTIVE_FG);
 	} else {
 		render_separator(&item->pixmap.inactive);
