@@ -100,7 +100,6 @@ sources = files(
   'src/search.c',
   'src/seat.c',
   'src/surface.c',
-  'ccan/ccan/err/err.c',
   'ccan/ccan/opt/helpers.c',
   'ccan/ccan/opt/opt.c',
   'ccan/ccan/opt/parse.c',
