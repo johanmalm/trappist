@@ -35,6 +35,7 @@ pangocairo = dependency('pangocairo')
 xml2 = dependency('libxml-2.0')
 svg = dependency('librsvg-2.0', version: '>=2.46', required: false)
 inih = dependency('inih')
+talloc = dependency('talloc')
 
 
 subdir('sway-client-helpers')
@@ -86,6 +87,7 @@ dependencies = [
   xml2,
   sfdo_icon,
   inih,
+  talloc,
 ]
 
 sources = files(
