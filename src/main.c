@@ -30,13 +30,12 @@ static struct opt_table opts[] = {
 	OPT_ENDTABLE
 };
 
-static struct state state = { 0 };
-
 static void
 display_in(int fd, short mask, void *data)
 {
-	if (wl_display_dispatch(state.display) == -1) {
-		state.run_display = false;
+	struct state *state = data;
+	if (wl_display_dispatch(state->display) == -1) {
+		state->run_display = false;
 	}
 }
 
@@ -64,14 +63,12 @@ main(int argc, char *argv[])
 	importance = MIN(importance, LOG_DEBUG);
 	log_init(importance);
 
-	if (!menu_file) {
-		LOG(LOG_ERROR, "cannot find menu file");
-		exit(EXIT_FAILURE);
-	}
+	DIE_ON(!menu_file, "cannot find menu file");
 
 	struct conf conf = { 0 };
 	conf_init(&conf, config_file);
 
+	struct state state = { 0 };
 	wl_list_init(&state.outputs);
 
 	state.display = wl_display_connect(NULL);
@@ -114,7 +111,7 @@ main(int argc, char *argv[])
 
 	state.eventloop = loop_create();
 	loop_add_fd(state.eventloop, wl_display_get_fd(state.display), POLLIN,
-		display_in, NULL);
+		display_in, &state);
 
 	state.run_display = true;
 	while (state.run_display) {
