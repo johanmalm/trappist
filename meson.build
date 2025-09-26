@@ -78,7 +78,7 @@ sfdo_basedir = dependency(
 
 sfdo_icon = dependency(
   'libsfdo-icon',
-  version: '>=0.1.0',
+  version: '>=0.1.3',
   fallback: 'libsfdo',
   default_options: [
     'default_library=static',
