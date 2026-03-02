@@ -9,7 +9,6 @@
 #include "conf.h"
 #include "icon.h"
 #include "menu.h"
-#include "talloc-helpers.h"
 #include "trappist.h"
 
 static bool show_version;
@@ -47,10 +46,24 @@ display_in(int fd, short mask, void *data)
 	} \
 } while (0)
 
-static void
-run(void)
+int
+main(int argc, char *argv[])
 {
-	TALLOC_CTX *tal defer = xtalloc_new(NULL);
+	opt_register_table(opts, NULL);
+	if (!opt_parse(&argc, argv, opt_log_stderr)) {
+		exit(EXIT_FAILURE);
+	}
+
+	if (show_version) {
+		printf("No version exists yet\n");
+		exit(EXIT_FAILURE);
+	}
+
+	enum log_importance importance = LOG_ERROR + verbose;
+	importance = MIN(importance, LOG_DEBUG);
+	log_init(importance);
+
+	DIE_ON(!menu_file, "cannot find menu file");
 
 	struct conf conf = { 0 };
 	conf_init(&conf, config_file);
@@ -116,37 +129,5 @@ run(void)
 	}
 	icon_finish();
 	pango_cairo_font_map_set_default(NULL);
-}
-
-int
-main(int argc, char *argv[])
-{
-	opt_register_table(opts, NULL);
-	if (!opt_parse(&argc, argv, opt_log_stderr)) {
-		exit(EXIT_FAILURE);
-	}
-
-	if (show_version) {
-		printf("No version exists yet\n");
-		exit(EXIT_FAILURE);
-	}
-
-	enum log_importance importance = LOG_ERROR + verbose;
-	importance = MIN(importance, LOG_DEBUG);
-	log_init(importance);
-
-	DIE_ON(!menu_file, "cannot find menu file");
-
-	if (getenv("TALLOC_REPORT")) {
-		talloc_enable_null_tracking();
-	}
-
-	run();
-
-	if (getenv("TALLOC_REPORT")) {
-		talloc_report_full(NULL, stderr);
-		talloc_disable_null_tracking();
-	}
-
 	return 0;
 }
