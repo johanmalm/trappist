@@ -23,8 +23,8 @@ Use [labwc-menu-gnome3] or hand-craft your own menu file using
 - No GTK or X11
 - No parsing of XDG menu spec .directory or .menu files
 - Only one binary
-- [ ] Long-running application
-- [ ] Wake up using unix-socket
+- [x] Long-running application
+- [x] Wake up using unix-socket
 
 ## Dependencies
 

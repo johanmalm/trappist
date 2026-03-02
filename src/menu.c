@@ -626,14 +626,29 @@ process_initial_position(struct menu *menu, int x, int y)
 	menu->visible = true;
 }
 
+/* module-level flag so menu_reset() can clear it */
+static bool menu_cursor_initialized;
+
+void
+menu_reset(struct state *state)
+{
+	if (state->hover_timer) {
+		loop_remove_timer(state->eventloop, state->hover_timer);
+		state->hover_timer = NULL;
+	}
+	state->menu->visible = false;
+	close_all_submenus(state->menu);
+	state->selection = NULL;
+	menu_cursor_initialized = false;
+}
+
 void
 menu_handle_cursor_motion(struct menu *menu, int x, int y)
 {
-	static bool has_run;
-	if (!has_run) {
+	if (!menu_cursor_initialized) {
 		process_initial_position(menu, x, y);
 	}
-	has_run = true;
+	menu_cursor_initialized = true;
 
 	if (!menu->visible) {
 		return;
@@ -682,7 +697,8 @@ menu_handle_button_pressed(struct state *state, int x, int y)
 			return;
 		}
 	}
-	state->run_display = false;
+	surface_unmap(state->surface);
+	menu_reset(state);
 }
 
 static void
@@ -740,7 +756,8 @@ menu_handle_button_released(struct state *state, int x, int y)
 		return;
 	}
 	spawn_async_no_shell(state->selection->command);
-	state->run_display = false;
+	surface_unmap(state->surface);
+	menu_reset(state);
 }
 
 enum trappist_direction {
@@ -817,13 +834,15 @@ menu_handle_key(struct state *state, xkb_keysym_t keysym, uint32_t codepoint)
 	case XKB_KEY_KP_Enter:
 	case XKB_KEY_Return:
 		spawn_async_no_shell(state->selection->command);
-		state->run_display = false;
+		surface_unmap(state->surface);
+		menu_reset(state);
 		break;
 	case XKB_KEY_BackSpace:
 		search_remove_last_uft8_character();
 		break;
 	case XKB_KEY_Escape:
-		state->run_display = false;
+		surface_unmap(state->surface);
+		menu_reset(state);
 		break;
 	default:
 		if (!codepoint) {

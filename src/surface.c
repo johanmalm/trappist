@@ -22,7 +22,9 @@ static void
 layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface)
 {
 	struct surface *surface = data;
+	struct state *state = surface->state;
 	surface_destroy(surface);
+	state->run_display = false;
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
@@ -112,4 +114,25 @@ surface_destroy(struct surface *surface)
 	destroy_buffer(&surface->buffers[0]);
 	destroy_buffer(&surface->buffers[1]);
 	free(surface);
+}
+
+void
+surface_unmap(struct surface *surface)
+{
+	if (surface->layer_surface) {
+		zwlr_layer_surface_v1_destroy(surface->layer_surface);
+		surface->layer_surface = NULL;
+	}
+	wl_surface_attach(surface->surface, NULL, 0, 0);
+	wl_surface_commit(surface->surface);
+	surface->width = 0;
+	surface->height = 0;
+	surface->frame_pending = false;
+	surface->dirty = false;
+}
+
+void
+surface_map(struct surface *surface)
+{
+	surface_layer_surface_create(surface);
 }
