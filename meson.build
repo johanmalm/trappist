@@ -103,6 +103,7 @@ sources = files(
   'src/conf.c',
   'src/globals.c',
   'src/icon.c',
+  'src/ipc.c',
   'src/main.c',
   'src/menu.c',
   'src/output.c',

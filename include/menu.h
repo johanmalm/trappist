@@ -64,6 +64,7 @@ struct menu {
 
 void menu_init(struct state *state, struct conf *conf, const char *filename);
 void menu_finish(struct state *state);
+void menu_reset(struct state *state);
 void pixmap_pair_create(struct menuitem *item, struct conf *conf);
 void menu_move(struct menu *menu, int x, int y);
 void menu_handle_cursor_motion(struct menu *menu, int x, int y);

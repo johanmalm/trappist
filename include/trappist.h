@@ -107,6 +107,8 @@ void render_frame(struct surface *surface);
 void surface_layer_surface_create(struct surface *surface);
 bool surface_is_configured(struct surface *surface);
 void surface_damage(struct surface *surface);
+void surface_unmap(struct surface *surface);
+void surface_map(struct surface *surface);
 void surface_destroy(struct surface *surface);
 void seat_init(struct state *state, struct wl_seat *wl_seat);
 void globals_init(struct state *state);

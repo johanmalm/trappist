@@ -4,10 +4,13 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
 #include <sway-client-helpers/log.h>
 #include <sway-client-helpers/loop.h>
 #include "conf.h"
 #include "icon.h"
+#include "ipc.h"
 #include "menu.h"
 #include "trappist.h"
 
@@ -39,6 +42,22 @@ display_in(int fd, short mask, void *data)
 	}
 }
 
+static void
+ipc_in(int fd, short mask, void *data)
+{
+	struct state *state = data;
+	int client_fd = accept(fd, NULL, NULL);
+	if (client_fd < 0) {
+		return;
+	}
+	char buf[32] = { 0 };
+	ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
+	close(client_fd);
+	if (n > 0 && !strcmp(buf, "show")) {
+		surface_map(state->surface);
+	}
+}
+
 #define DIE_ON(condition, message) do { \
 	if ((condition) != 0) { \
 		LOG(LOG_ERROR, message); \
@@ -64,6 +83,14 @@ main(int argc, char *argv[])
 	log_init(importance);
 
 	DIE_ON(!menu_file, "cannot find menu file");
+
+	/*
+	 * If a trappist instance is already running, ask it to show the menu
+	 * via IPC and exit.  Otherwise become the server.
+	 */
+	if (ipc_client_send_show()) {
+		exit(EXIT_SUCCESS);
+	}
 
 	struct conf conf = { 0 };
 	conf_init(&conf, config_file);
@@ -109,9 +136,14 @@ main(int argc, char *argv[])
 
 	menu_init(&state, &conf, menu_file);
 
+	int ipc_fd = ipc_server_init();
+
 	state.eventloop = loop_create();
 	loop_add_fd(state.eventloop, wl_display_get_fd(state.display), POLLIN,
 		display_in, &state);
+	if (ipc_fd >= 0) {
+		loop_add_fd(state.eventloop, ipc_fd, POLLIN, ipc_in, &state);
+	}
 
 	state.run_display = true;
 	while (state.run_display) {
@@ -122,6 +154,7 @@ main(int argc, char *argv[])
 		loop_poll(state.eventloop);
 	}
 
+	ipc_cleanup();
 	menu_finish(&state);
 	surface_destroy(state.surface);
 	if (state.seat->cursor_theme) {
